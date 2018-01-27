@@ -28,6 +28,10 @@
       };
     };
     var connected = false;
+    window.addEventListener('beforeunload', function () {
+      ws.onclose = null;
+      ws.close();
+    });
     return {
       read: function (endpoint, callback) {
         if (connected) {
