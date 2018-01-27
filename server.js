@@ -55,11 +55,11 @@ server.on('connection', function (ws) {
 
     server.clients.forEach(function (client) {
       if (client !== ws && client.readyState === WebSocket.OPEN) {
-        try {
-          client.send(data);
-        } catch (e) {
-        }
+        client.send(data, function (err) {
+          err && console.log(err);
+        });
       }
     });
   });
+  ws.on('error', console.log);
 });
