@@ -1,0 +1,15 @@
+{
+  "name": "dplayer-live-backend",
+  "version": "0.1.0",
+  "description": "WebSocket live backend for DPlayer",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "minimist": "^1.2.0",
+    "ws": "3.3.2"
+  }
+}

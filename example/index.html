@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DPlayer Demo</title>
+  <link class="dplayer-css" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.css">
+</head>
+<body>
+
+<div id="player" style="width: 50%"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/hls.js/dist/hls.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/dplayer/dist/DPlayer.min.js"></script>
+
+<script type="application/javascript">
+  function createApiBackend (url, onMessage) {
+    var ws;
+    var connect = function () {
+      ws = new WebSocket(url);
+      ws.onmessage = function (event) {
+        onMessage(JSON.parse(event.data));
+      };
+      ws.onclose = function () {
+        // Try to reconnect in 5 seconds
+        setTimeout(connect, 5000);
+      };
+    };
+    var connected = false;
+    return {
+      read: function (endpoint, callback) {
+        if (connected) {
+          return;
+        }
+        connected = true;
+        connect();
+        callback();
+      },
+      send: function (endpoint, data, callback) {
+        ws.send(JSON.stringify(data));
+        callback();
+      }
+    };
+  }
+
+  var dp = new DPlayer({
+    container: document.getElementById('player'),
+    live: true,
+    autoplay: true,
+    danmaku: true,
+    apiBackend: createApiBackend('ws://localhost:1207', function (dan) {
+      dp.danmaku.draw(dan);
+    }),
+    video: {
+      url: 'http://localhost:8080/stream/main/index.m3u8',
+      type: 'hls'
+    }
+  });
+</script>
+
+</body>
+</html>
