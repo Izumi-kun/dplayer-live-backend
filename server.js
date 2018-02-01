@@ -32,9 +32,16 @@ server.on('error', function (err) {
 
 var hexColorRegExp = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/;
 var typeRegExp = /^(top|bottom|right)$/;
+var msgMinInterval = 500;
+var lastMsgTimestamps = {};
 
-server.on('connection', function (ws) {
+server.on('connection', function (ws, req) {
+  var ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
   ws.on('message', function (message) {
+    var time = Date.now();
+    if (lastMsgTimestamps[ip] && lastMsgTimestamps[ip] - time < msgMinInterval) {
+      return;
+    }
     try {
       message = JSON.parse(message);
       if (!hexColorRegExp.test(message.color) || !typeRegExp.test(message.type) || !message.text) {
@@ -50,6 +57,7 @@ server.on('connection', function (ws) {
     }
 
     console.log(msg);
+    lastMsgTimestamps[ip] = time;
 
     var data = JSON.stringify(msg);
 
@@ -63,3 +71,12 @@ server.on('connection', function (ws) {
   });
   ws.on('error', console.log);
 });
+
+setInterval(function () {
+  var time = Date.now();
+  Object.keys(lastMsgTimestamps).forEach(function (key) {
+    if (time - lastMsgTimestamps[key] > msgMinInterval) {
+      delete lastMsgTimestamps[key];
+    }
+  });
+}, 5000);
