@@ -33,17 +33,17 @@
       ws.close();
     });
     return {
-      read: function (endpoint, callback) {
+      read: function (options) {
         if (connected) {
           return;
         }
         connected = true;
         connect();
-        callback();
+        options.success();
       },
-      send: function (endpoint, data, callback) {
-        ws.send(JSON.stringify(data));
-        callback();
+      send: function (options) {
+        ws.send(JSON.stringify(options.data));
+        options.success();
       }
     };
   }
